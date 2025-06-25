@@ -12,7 +12,7 @@ interface SessionData {
 }
 
 export const flamesApi = {
-  async calculateFlames(nameOne: string, nameTwo: string): Promise<FlamesResult | undefined> {
+  async calculateFlames(nameOne: string, nameTwo: string) {
     try {
       const { id: sessionId } = this.getOrCreateSession();
       const response = await fetch(`${API_BASE_URL}/flames/calculate`, {
@@ -31,7 +31,6 @@ export const flamesApi = {
       return data.data;
     } catch (error) {
       console.error("Failed to calculate FLAMES:", error);
-      return undefined;
     }
   },
 
@@ -75,14 +74,14 @@ export const flamesApi = {
   async deleteHistoryItem(id: string): Promise<void> {
     try {
       const response = await fetch(`${API_BASE_URL}/flames/delete/${id}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
       if (!response.ok) {
-        throw new Error('Failed to delete history item');
+        throw new Error("Failed to delete history item");
       }
     } catch (error) {
-      console.error('Error deleting history item:', error);
+      console.error("Error deleting history item:", error);
       throw error;
     }
   },
@@ -90,15 +89,15 @@ export const flamesApi = {
   async getById(id: string): Promise<FlamesResult | undefined> {
     try {
       const response = await fetch(`${API_BASE_URL}/flames/${id}`);
-      
+
       if (!response.ok) {
-        throw new Error('Failed to fetch FLAMES result');
+        throw new Error("Failed to fetch FLAMES result");
       }
 
       const data: FlamesResponse = await response.json();
       return data.data;
     } catch (error) {
-      console.error('Error fetching FLAMES result:', error);
+      console.error("Error fetching FLAMES result:", error);
       return undefined;
     }
   },
