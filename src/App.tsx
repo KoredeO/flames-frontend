@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion } from "framer-motion";
 import FlamesInput from "./components/FlamesInput";
 import ResultCard from "./components/ResultCard";
@@ -26,10 +26,14 @@ function App() {
     setIsLoading(true);
     try {
       const result = await flamesApi.calculateFlames(nameOne, nameTwo);
+      if (!result) {
+        console.error('Failed to calculate FLAMES');
+        return;
+      }
+      
       setCurrentResult(result);
 
-      // Add to history
-      setHistory((prev) => [result, ...prev]);
+      setHistory((prev: FlamesResult[]): FlamesResult[] => [result, ...prev]);
 
       // Show confetti for romantic results
       if (result.result === "Lovers" || result.result === "Marriage") {
@@ -42,11 +46,27 @@ function App() {
     }
   };
 
+  // Check for shared result in URL when component mounts
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const sharedId = urlParams.get('result');
+    
+    if (sharedId) {
+      const fetchSharedResult = async () => {
+        const result = await flamesApi.getById(sharedId);
+        if (result) {
+          setCurrentResult(result);
+        }
+      };
+      fetchSharedResult();
+    }
+  }, []);
+
   const handleShare = async () => {
-    if (!currentResult) return;
+    if (!currentResult || !currentResult.id) return;
 
     const shareText = `${currentResult.nameOne} + ${currentResult.nameTwo} = ${currentResult.result}! 💕 Check out your FLAMES result!`;
-    const shareUrl = window.location.href;
+    const shareUrl = `${window.location.origin}?result=${currentResult.id}`;
 
     try {
       if (navigator.share) {
@@ -57,7 +77,6 @@ function App() {
         });
       } else {
         await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
-        // You could add a toast notification here
         alert("Result copied to clipboard! 📋");
       }
     } catch (error) {
